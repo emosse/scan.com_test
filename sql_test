@@ -1,0 +1,9 @@
+--Question 1
+--Get the cumulative cash flow for each day:
+SELECT 
+  summary_date,
+  sum(cash_flow) over (order by summary_date)
+FROM balance_transactions_summary
+
+
+
