@@ -1,9 +1,70 @@
 --Question 1
 --Get the cumulative cash flow for each day:
+
 SELECT 
-  summary_date,
+	summary_date,
   sum(cash_flow) over (order by summary_date)
 FROM balance_transactions_summary
+
+--Question 2
+--Return the same table, but with a new column that has average salary per function_name.
+
+SELECT 
+	function_name,
+	employee_id,
+	salary,
+	avg(salary) over (partition by function_name) as avg_of_salary
+FROM salaries
+order by function_name
+
+--Question3
+--Add a column with the rank of each employee based on their salary within their department, where the employee with the highest salary gets the rank of 1. 
+
+SELECT 
+	*,
+	rank() over (partition by function_name order by salary desc) as salary_rank
+FROM salaries
+order by function_name
+
+
+
+--Question 4
+--Return a table in the following format which displays the cities each user lived in and for the years they lived in them.
+
+SELECT 
+json_array(users.data,'$.name') as name,
+city,
+city_lived_years
+FROM users
+cross apply openjson(users.data,'$.CitiesLived')
+WITH (
+    item NVARCHAR(50) '$.cityName',
+    cost_total NVARCHAR(MAX) '$.yearLived' AS JSON
+)
+
+
+--Question 5
+--Return a table in the following format which shows the 3 day moving average of the total number of logins for each DEVICE per day
+
+with logins as (
+SELECT 
+	login_Date,
+	device,
+	count(*) count_of_logins
+FROM `logins`
+group by 1,2
+order by 1)
+
+select 
+	*,
+	avg(count_of_logins) over (partition by device order by login_Date 
+    rows between 2 preceding and current row) as moving_average_three_day
+from logins
+
+---Comment, I wasnt sure if I was support to account for the 3 days in the data or a calendar 3 day period. I used just what was in the data. Doing a strict 3 day rule
+---for this would result in a slightly different query
+
+
 
 
 
